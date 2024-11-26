@@ -1,0 +1,13 @@
+version: '3.8'    # Định nghĩa phiên bản của Docker Compose. Ở đây sử dụng phiên bản 3.8
+
+services:
+  app:
+    build:
+      context: .                  # Đặt context là thư mục hiện tại (nơi chứa Dockerfile)
+      dockerfile: ./deploy/Dockerfile # Chỉ định Dockerfile để build image, đặt tại ./deploy/Dockerfile
+    volumes:
+      - .:/app                    # Mount thư mục hiện tại vào thư mục /app trong container
+    ports:
+      - "3000:80"                 # Map cổng 80 trong container sang cổng 3000 trên máy host
+    environment:
+      - NODE_ENV=production       # Thiết lập biến môi trường NODE_ENV thành 'production' cho container

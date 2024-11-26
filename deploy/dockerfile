@@ -1,0 +1,32 @@
+# Sử dụng Node.js phiên bản 18 làm base image cho giai đoạn build
+FROM node:18 AS build
+
+# Thiết lập thư mục làm việc là /app bên trong container
+WORKDIR /app
+
+# Copy các file package.json và package-lock.json vào container
+COPY package*.json ./
+
+# Cài đặt các dependencies
+RUN npm install
+
+# Copy toàn bộ mã nguồn và các file khác vào thư mục làm việc /app
+COPY . .
+
+# Build ứng dụng (thường để tạo bản build sản phẩm cuối cùng trong thư mục /app/dist)
+RUN npm run build
+
+# Sử dụng Nginx bản alpine cho giai đoạn deploy, nhẹ và tối ưu dung lượng
+FROM nginx:alpine
+
+# Copy các file đã build từ thư mục /app/dist của giai đoạn build vào thư mục phục vụ nội dung của Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy file cấu hình Nginx tùy chỉnh từ thư mục deploy trên host vào thư mục cấu hình của Nginx
+COPY ./deploy/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Khai báo container sẽ lắng nghe trên cổng 80 để phục vụ HTTP
+EXPOSE 80
+
+# Chạy Nginx ở chế độ foreground để container không bị tắt
+CMD ["nginx", "-g", "daemon off;"]

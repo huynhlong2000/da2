@@ -1,0 +1,32 @@
+name: Notebook CI/CD
+
+on:
+  push:
+    branches:
+      - main  # Chạy khi có thay đổi trong nhánh chính
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout mã nguồn từ repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Đăng nhập Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }} # Lưu username trong GitHub Secrets
+          password: ${{ secrets.DOCKER_PASSWORD }} # Lưu password trong GitHub Secrets
+
+      # Build Docker image
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/notebook -f deploy/dockerfile .
+
+      # Push Docker image lên Docker Hub
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/notebook
